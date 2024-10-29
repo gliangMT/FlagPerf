@@ -1,3 +1,3 @@
-nvcc capacity.cu -o capacitytest
+mcc capacity.mu -o capacitytest -lmusart
 ./capacitytest
 sleep 300
