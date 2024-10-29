@@ -1,2 +1,2 @@
-nvcc bandwidth.cu -o bdtest
+mcc bandwidth.mu -o bdtest -lmusart
 ./bdtest

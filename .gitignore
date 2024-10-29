@@ -10,3 +10,5 @@ base/result/*
 operation/result/*
 inference/onnxs/*
 *.log
+*.*
+!*/
