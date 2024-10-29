@@ -1,4 +1,15 @@
 # Build and Release Folders
+# Ignore all
+*
+ 
+# Unignore all with extensions
+!*.*
+ 
+# Unignore all dirs
+!*/
+ 
+### Above combination will ignore all files without extension ###
+
 .idea/
 .ijwb/
 .vscode/
@@ -10,5 +21,3 @@ base/result/*
 operation/result/*
 inference/onnxs/*
 *.log
-*.*
-!*/
