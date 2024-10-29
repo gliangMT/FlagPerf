@@ -56,7 +56,7 @@ void test(const PrecisionConfig& config) {
   auto start = std::chrono::high_resolution_clock::now();
 
   if (syncError != musaSuccess) {
-    std::cout << "CUDA error: " << musaGetErrorString(syncError) << std::endl;
+    std::cout << "MUSA error: " << musaGetErrorString(syncError) << std::endl;
   }
 
   for (int i = 0; i < config.NUM_ITERATIONS; ++i) {
@@ -76,7 +76,7 @@ void test(const PrecisionConfig& config) {
   auto end = std::chrono::high_resolution_clock::now();
 
   if (syncError != musaSuccess) {
-    std::cout << "CUDA error: " << musaGetErrorString(syncError) << std::endl;
+    std::cout << "MUSA error: " << musaGetErrorString(syncError) << std::endl;
   }
   auto duration =
       std::chrono::duration_cast<std::chrono::microseconds>(end - start);
