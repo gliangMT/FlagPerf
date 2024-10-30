@@ -1,6 +1,6 @@
-FLAGPERF_PATH: "/home/FlagPerf/base"
+FLAGPERF_PATH: "/data/liang.geng/FlagPerf/base"
 FLAGPERF_LOG_PATH: "result"
-VENDOR: "nvidia"
+VENDOR: "mthreads"
 FLAGPERF_LOG_LEVEL: "info"
 # "BENCHMARK" means benchmarks(torch), "TOOLKIT" means toolkits
 # benchmarks using container_main to launch "torchrun benchmarks/<case>/main.py", nnodes * nproc
@@ -8,25 +8,40 @@ FLAGPERF_LOG_LEVEL: "info"
 # only in benchmarks, flagperf will automatically execute benchmakrs/<case>/<vendor>/requirements.txt and env.sh
 # all resources to be used in toolkits/<case>/<vendor>/main.sh, should be under toolkits/<case>/<vendor>/
 BENCHMARKS_OR_TOOLKITS: "BENCHMARK"
-HOSTS: ["192.168.1.2", "192.168.1.3"]
+HOSTS: ["10.10.129.10"] # localhost test
 NPROC_PER_NODE: 8
 SSH_PORT: "22"
 HOSTS_PORTS: ["2222"]
 MASTER_PORT: "29501"
 SHM_SIZE: "32G"
-ACCE_CONTAINER_OPT: " --gpus all"
+ACCE_CONTAINER_OPT: "--env MTHREADS_VISIBLE_DEVICES=all"
 # for nvidia, using " -- gpus all"
 # for kunlunxin, using "--device=/dev/xpu0 --device=/dev/xpu1 --device=/dev/xpu2 --device=/dev/xpu3 --device=/dev/xpu4 --device=/dev/xpu5 --device=/dev/xpu6 --device=/dev/xpu7 --device=/dev/xpuctrl"
 # for iluvatar, using""
-# for xxx, using
+# for mthreads, using"--env MTHREADS_VISIBLE_DEVICES=all"
 PIP_SOURCE: "https://mirror.baidu.com/pypi/simple"
 CLEAR_CACHES: True
 # for nvidia, using "CUDA_VISIBLE_DEVICES"
 # for xxx, using
-ACCE_VISIBLE_DEVICE_ENV_NAME: "CUDA_VISIBLE_DEVICES"
+ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES: 
-     "computation-FP32": "pytorch_2.3"
-     
+     "computation-FP32:S4000": "pytorch_2.2"
+
+# mthreads "computation-FP32:S4000": "pytorch_2.2"
+# mthreads "computation-FP64:S4000": "pytorch_2.2"
+# mthreads "computation-FP32:S4000": "pytorch_2.2"
+# mthreads "computation-TF32:S4000": "pytorch_2.2"
+# mthreads "computation-FP16:S4000": "pytorch_2.2"
+# mthreads "computation-BF16:S4000": "pytorch_2.2"
+# mthreads "computation-INT8:S4000": "pytorch_2.2"
+# mthreads "main_memory-bandwidth:S4000": "pytorch_2.2"
+# mthreads "main_memory-capacity:S4000": "pytorch_2.2"
+# mthreads "interconnect-h2d:S4000": "pytorch_2.2"
+# mthreads "interconnect-MPI_intraserver:S4000": "pytorch_2.2"
+# mthreads "interconnect-P2P_intraserver:S4000": "pytorch_2.2"
+# mthreads "interconnect-P2P_interserver:S4000": "pytorch_2.2" # need debug
+# mthreads "interconnect-MPI_interserver:S4000": "pytorch_2.2" # need debug
+
 # iluvatar "computation-BF16:BI150": "pytorch_2.1"
 # iluvatar "computation-FP16:BI150": "pytorch_2.1"
 # iluvatar "computation-FP32:BI150": "pytorch_2.1" 
