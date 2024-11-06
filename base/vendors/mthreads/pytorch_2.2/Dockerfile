@@ -1,4 +1,4 @@
-FROM sh-harbor.mthreads.com/mt-ai/musa-pytorch-dev-py38:rc3.1.0-v1.3.0-qy2
+FROM registry.mthreads.com/mcconline/musa-pytorch-release-public:rc3.1.0-v1.3.0-S4000-py310
 # RUN /bin/bash -c "pip config set global.index-url https://mirror.baidu.com/pypi/simple"
 RUN /bin/bash -c "uname -a"
 RUN /bin/bash -c alias python3=python

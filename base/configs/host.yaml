@@ -16,12 +16,13 @@ MASTER_PORT: "29501"
 SHM_SIZE: "32G"
 ACCE_CONTAINER_OPT: "--env MTHREADS_VISIBLE_DEVICES=all"
 # for nvidia, using " -- gpus all"
+# for mthreads, using"--env MTHREADS_VISIBLE_DEVICES=all"
 # for kunlunxin, using "--device=/dev/xpu0 --device=/dev/xpu1 --device=/dev/xpu2 --device=/dev/xpu3 --device=/dev/xpu4 --device=/dev/xpu5 --device=/dev/xpu6 --device=/dev/xpu7 --device=/dev/xpuctrl"
 # for iluvatar, using""
-# for mthreads, using"--env MTHREADS_VISIBLE_DEVICES=all"
 PIP_SOURCE: "https://mirror.baidu.com/pypi/simple"
 CLEAR_CACHES: True
 # for nvidia, using "CUDA_VISIBLE_DEVICES"
+# for mthreads, using "MUSA_VISIBLE_DEVICES"
 # for xxx, using
 ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES: 
