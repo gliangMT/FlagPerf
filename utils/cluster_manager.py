@@ -78,7 +78,7 @@ class ClusterManager():
         self.ssh_cmd_head = "ssh -o ConnectTimeout=3" \
                             + " -o StrictHostKeyChecking=no -l " + self.user \
                             + " -p " + port
-        self.scp_cmd_head = "scp -o  ConnectTimeout=3 " \
+        self.scp_cmd_head = "sudo scp -o  ConnectTimeout=3 " \
                             + "-o StrictHostKeyChecking=no -P " + port
 
     def _run_command_ssh_remote(self, cmd, host, timeout=10):
