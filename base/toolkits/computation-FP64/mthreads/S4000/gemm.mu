@@ -21,14 +21,15 @@ struct PrecisionConfig {
 };
 
 void test(const PrecisionConfig& config) {
-  double *d_A, *d_B, *d_C;
+  double* d_A, * d_B, * d_C;
 
-  musaMallocManaged(&d_A, M * K * config.bytesPerElement);
-  musaMallocManaged(&d_B, K * N * config.bytesPerElement);
+  musaMalloc(&d_A, M * K * config.bytesPerElement);
+  musaMalloc(&d_B, K * N * config.bytesPerElement);
   if (config.musaType == MUSA_R_8I) {
-    musaMallocManaged(&d_C, M * N * sizeof(float));
-  } else {
-    musaMallocManaged(&d_C, M * N * config.bytesPerElement);
+    musaMalloc(&d_C, M * N * sizeof(float));
+  }
+  else {
+    musaMalloc(&d_C, M * N * config.bytesPerElement);
   }
 
   mublasHandle_t handle;
@@ -40,14 +41,15 @@ void test(const PrecisionConfig& config) {
   for (int i = 0; i < config.WARMUP_ITERATIONS; ++i) {
     if (config.musaType == MUSA_R_8I) {
       mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-                   config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-                   MUSA_R_32I, M, config.mublasType,
-                   MUBLAS_GEMM_DEFAULT_TENSOR_OP);
-    } else {
+        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
+        MUSA_R_32I, M, config.mublasType,
+        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
+    }
+    else {
       mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-                   config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-                   config.musaType, M, config.mublasType,
-                   MUBLAS_GEMM_DEFAULT_TENSOR_OP);
+        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
+        config.musaType, M, config.mublasType,
+        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
     }
   }
 
@@ -61,14 +63,15 @@ void test(const PrecisionConfig& config) {
   for (int i = 0; i < config.NUM_ITERATIONS; ++i) {
     if (config.musaType == MUSA_R_8I) {
       mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-                   config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-                   MUSA_R_32I, M, config.mublasType,
-                   MUBLAS_GEMM_DEFAULT_TENSOR_OP);
-    } else {
+        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
+        MUSA_R_32I, M, config.mublasType,
+        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
+    }
+    else {
       mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-                   config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-                   config.musaType, M, config.mublasType,
-                   MUBLAS_GEMM_DEFAULT_TENSOR_OP);
+        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
+        config.musaType, M, config.mublasType,
+        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
     }
   }
   syncError = musaDeviceSynchronize();
@@ -78,9 +81,9 @@ void test(const PrecisionConfig& config) {
     std::cout << "MUSA error: " << musaGetErrorString(syncError) << std::endl;
   }
   auto duration =
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   std::cout << "Average " << config.name << " Single Op Duration: "
-            << duration.count() / config.NUM_ITERATIONS << " us" << std::endl;
+    << duration.count() / config.NUM_ITERATIONS << " us" << std::endl;
 
   double time_second = duration.count() / 1.0e6;
   double flops = 2.0 * M * N * K * config.NUM_ITERATIONS;
@@ -88,7 +91,7 @@ void test(const PrecisionConfig& config) {
   double TFLOPS = FLOPS / 1.0e12;
 
   std::cout << "[FlagPerf Result]" << "computation-FP64=" << TFLOPS << "TFLOPS"
-            << std::endl;
+    << std::endl;
 
   musaFree(d_A);
   musaFree(d_B);
@@ -98,7 +101,7 @@ void test(const PrecisionConfig& config) {
 }
 
 int main() {
-  PrecisionConfig fp64 = {MUSA_R_64F, MUBLAS_COMPUTE_64F, 8, "FP64", 10000, 10};
+  PrecisionConfig fp64 = { MUSA_R_64F, MUBLAS_COMPUTE_64F, 8, "FP64", 10000, 10 };
 
   test(fp64);
 
