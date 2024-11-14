@@ -20,6 +20,11 @@ import sys
 sys.path.append("..")
 from drivers.utils import *
 
+# mthreads torch_musa import
+try:
+    import torch_musa
+except ImportError:
+    pass
 
 def parse_args():
     parser = ArgumentParser(description=" ")
@@ -67,14 +72,18 @@ def main(config, case_config, rank, world_size, local_rank):
 
     for _ in range(case_config.ITERS):
         _tensor = tensor.clone()
-    torch.cuda.synchronize()
+    
+    if "mthreads" in config.vendor:
+        torch.musa.synchronize()
+    else:
+        torch.cuda.synchronize()
 
     host_device_sync(config.vendor)
     multi_device_sync(config.vendor)
     end_time = time.perf_counter()
     
     elapsed_time = end_time - start_time
-
+    print(f">>>>>>>>>>>> Debug: elapsed_time = {elapsed_time}")
 
     datasize = case_config.ITERS * 2 * (Melements * 1024 * 1024 * 4 / 1E9)
     bandwidth = datasize / elapsed_time

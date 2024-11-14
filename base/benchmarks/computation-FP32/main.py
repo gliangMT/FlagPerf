@@ -52,9 +52,6 @@ def main(config, case_config, rank, world_size, local_rank):
     if "iluvatar" in config.vendor:
         torch.cuda.set_device(local_rank)
 
-    if "mthreads" in config.vendor:
-        print(f">>>>>>>>>> set the localrank = {local_rank}")
-        torch.musa.set_device(local_rank)
     
     m = case_config.M
     n = case_config.N
