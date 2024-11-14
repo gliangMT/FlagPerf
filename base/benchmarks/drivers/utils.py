@@ -18,7 +18,7 @@ def set_ieee_float32(vendor):
         torch.backends.mlu.matmul.allow_tf32 = False
         torch.backends.cnnl.allow_tf32 = False
     elif "mthreads" in vendor:
-        torch.backends.mudnn.matmul.allow_tf32 = False
+        torch.backends.mudnn.allow_tf32 = False
     else:
         print("unspecified vendor {}, do nothing".format(vendor))
 
@@ -30,7 +30,7 @@ def unset_ieee_float32(vendor):
         torch.backends.mlu.matmul.allow_tf32 = True
         torch.backends.cnnl.allow_tf32 = True
     elif "mthreads" in vendor:
-        torch.backends.mudnn.matmul.allow_tf32 = True
+        torch.backends.mudnn.allow_tf32 = True
     else:
         print("unspecified vendor {}, do nothing".format(vendor))
 

@@ -1,1 +1,2 @@
-DIST_BACKEND: "nccl"
+DIST_BACKEND: "mccl"
+ITERS: 10000

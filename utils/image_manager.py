@@ -118,7 +118,7 @@ class ImageManager():
         tmp_container_name = "tmp_" + self.repository + "-" + self.tag \
                              + "-container"
         image_dir_in_container = "/workspace/docker_image"
-        start_args = "-i --rm --init --detach --net=host --uts=host " \
+        start_args = " --rm --init --detach --net=host --uts=host " \
                      + "--ipc=host --security-opt=seccomp=unconfined " \
                      + "--privileged=true --ulimit=stack=67108864 " \
                      + "--ulimit=memlock=-1 -v " + image_dir + ":" \
