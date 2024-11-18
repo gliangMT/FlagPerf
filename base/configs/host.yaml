@@ -26,7 +26,7 @@ CLEAR_CACHES: True
 # for xxx, using
 ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES: 
-     "computation-FP32:S4000": "pytorch_2.2"
+     "interconnect-P2P_intraserver:S4000": "pytorch_2.2"
 
 # mthreads "computation-FP32:S4000": "pytorch_2.2"
 # mthreads "computation-FP64:S4000": "pytorch_2.2"

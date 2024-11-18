@@ -83,7 +83,6 @@ def main(config, case_config, rank, world_size, local_rank):
     end_time = time.perf_counter()
     
     elapsed_time = end_time - start_time
-    print(f">>>>>>>>>>>> Debug: elapsed_time = {elapsed_time}")
 
     datasize = case_config.ITERS * 2 * (Melements * 1024 * 1024 * 4 / 1E9)
     bandwidth = datasize / elapsed_time
