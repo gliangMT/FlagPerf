@@ -1,14 +1,14 @@
 FLAGPERF_PATH: "/data/liang.geng/FlagPerf/base"
 FLAGPERF_LOG_PATH: "result"
 VENDOR: "mthreads"
-FLAGPERF_LOG_LEVEL: "info"
+FLAGPERF_LOG_LEVEL: "debug"
 # "BENCHMARK" means benchmarks(torch), "TOOLKIT" means toolkits
 # benchmarks using container_main to launch "torchrun benchmarks/<case>/main.py", nnodes * nproc
 # toolkits using container_main to launch bash toolkits/<case>/<vendor>/main.sh, nnodes.
 # only in benchmarks, flagperf will automatically execute benchmakrs/<case>/<vendor>/requirements.txt and env.sh
 # all resources to be used in toolkits/<case>/<vendor>/main.sh, should be under toolkits/<case>/<vendor>/
-BENCHMARKS_OR_TOOLKITS: "BENCHMARK"
-HOSTS: ["10.10.129.10"] # localhost test
+BENCHMARKS_OR_TOOLKITS: "TOOLKIT"
+HOSTS: ["10.10.129.10","10.10.129.9"]
 NPROC_PER_NODE: 8
 SSH_PORT: "22"
 HOSTS_PORTS: ["2222"]
@@ -27,7 +27,7 @@ CLEAR_CACHES: True
 # for xxx, using
 ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES: 
-     "interconnect-P2P_intraserver:S4000": "pytorch_2.2"
+     "interconnect-P2P_interserver:S4000": "pytorch_ssh"
 
 # mthreads "computation-FP32:S4000": "pytorch_2.2"
 # mthreads "computation-FP64:S4000": "pytorch_2.2"
@@ -41,8 +41,8 @@ CASES:
 # mthreads "interconnect-h2d:S4000": "pytorch_2.2"
 # mthreads "interconnect-MPI_intraserver:S4000": "pytorch_2.2"
 # mthreads "interconnect-P2P_intraserver:S4000": "pytorch_2.2"
-# mthreads "interconnect-P2P_interserver:S4000": "pytorch_2.2" # need debug
-# mthreads "interconnect-MPI_interserver:S4000": "pytorch_2.2" # need debug
+# mthreads "interconnect-P2P_interserver:S4000": "pytorch_ssh"
+# mthreads "interconnect-MPI_interserver:S4000": "pytorch_ssh" 
 
 # iluvatar "computation-BF16:BI150": "pytorch_2.1"
 # iluvatar "computation-FP16:BI150": "pytorch_2.1"
