@@ -20,6 +20,11 @@ import sys
 sys.path.append("..")
 from drivers.utils import *
 
+# mthreads torch_musa import
+try:
+    import torch_musa
+except ImportError:
+    pass
 
 def parse_args():
     parser = ArgumentParser(description=" ")
@@ -27,7 +32,7 @@ def parse_args():
     parser.add_argument("--vendor",
                         type=str,
                         required=True,
-                        help="vendor name like nvidia")
+                        help="vendor name like nvidia/A100")
     
     parser.add_argument("--node_size",
                         type=int,
@@ -47,6 +52,7 @@ def main(config, case_config, rank, world_size, local_rank):
     if "iluvatar" in config.vendor:
         torch.cuda.set_device(local_rank)
 
+    
     m = case_config.M
     n = case_config.N
     k = case_config.K

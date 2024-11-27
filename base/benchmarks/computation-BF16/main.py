@@ -20,6 +20,11 @@ import sys
 sys.path.append("..")
 from drivers.utils import *
 
+# mthreads torch_musa import
+try:
+    import torch_musa
+except ImportError:
+    pass
 
 def parse_args():
     parser = ArgumentParser(description=" ")

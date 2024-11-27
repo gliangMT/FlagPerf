@@ -10,3 +10,4 @@ RUN pip3 install munch
 RUN pip3 install argparse
 RUN pip3 install pyyaml
 ENTRYPOINT []
+
