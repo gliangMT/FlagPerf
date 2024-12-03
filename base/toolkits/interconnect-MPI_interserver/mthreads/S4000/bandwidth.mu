@@ -8,31 +8,31 @@
 
 #define GB (1024ULL * 1024ULL * 1024ULL)
 #define SIZE (4ULL * GB)
-#define WARMUP_ITERATIONS 200
-#define ITERATIONS 2000
+#define WARMUP_ITERATIONS 100
+#define ITERATIONS 1000
 
-void checkMusaError(musaError_t err, const char *msg) {
+void checkMusaError(musaError_t err, const char* msg) {
   if (err != musaSuccess) {
     fprintf(stderr, "MUSA Error: %s: %s\n", msg, musaGetErrorString(err));
     exit(EXIT_FAILURE);
   }
 }
 
-void checkMcclError(mcclResult_t result, const char *msg) {
+void checkMcclError(mcclResult_t result, const char* msg) {
   if (result != mcclSuccess) {
     fprintf(stderr, "MCCL Error: %s: %s\n", msg, mcclGetErrorString(result));
     exit(EXIT_FAILURE);
   }
 }
 
-void checkMPIError(int result, const char *msg) {
+void checkMPIError(int result, const char* msg) {
   if (result != MPI_SUCCESS) {
     fprintf(stderr, "MPI Error: %s\n", msg);
     exit(EXIT_FAILURE);
   }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   checkMPIError(MPI_Init(&argc, &argv), "MPI_Init");
 
   int rank, size;
@@ -45,49 +45,53 @@ int main(int argc, char *argv[]) {
 
   musaEvent_t start, end;
   float elapsed_time;
-  float *d_src;
-  float *d_dst;
+  float* d_src;
+  float* d_dst;
   mcclComm_t comm;
   musaStream_t stream;
 
   checkMusaError(musaSetDevice(gpu_id), "musaSetDevice");
   checkMusaError(musaMalloc(&d_src, SIZE), "musaMalloc");
   checkMusaError(musaMalloc(&d_dst, SIZE), "musaMalloc");
-  checkMusaError(musaMemset(d_src, 1.0f, SIZE), "musaMemset");
+
+  std::vector<float> host_data(SIZE / sizeof(float), 1.0f);
+  checkMusaError(musaMemcpy(d_src, host_data.data(), SIZE, musaMemcpyHostToDevice), "musaMemcpy");
+
+  // checkMusaError(musaMemset(d_src, 1.0f, SIZE), "musaMemset");
   checkMusaError(musaStreamCreate(&stream), "musaStreamCreate");
 
   mcclUniqueId id;
   if (rank == 0)
     checkMcclError(mcclGetUniqueId(&id), "mcclGetUniqueId");
   checkMPIError(MPI_Bcast(&id, sizeof(id), MPI_BYTE, 0, MPI_COMM_WORLD),
-                "MPI_Bcast");
+    "MPI_Bcast");
   checkMcclError(mcclCommInitRank(&comm, total_gpus, id, rank),
-                 "mcclCommInitRank");
+    "mcclCommInitRank");
   checkMusaError(musaEventCreate(&start), "musaEventCreate");
   checkMusaError(musaEventCreate(&end), "musaEventCreate");
 
   for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
-    checkMcclError(mcclAllReduce((const void *)d_src, (void *)d_dst,
-                                 SIZE / sizeof(float), mcclFloat, mcclSum, comm,
-                                 stream),
-                   "mcclAllReduce");
+    checkMcclError(mcclAllReduce((const void*)d_src, (void*)d_dst,
+      SIZE / sizeof(float), mcclFloat, mcclSum, comm,
+      stream),
+      "mcclAllReduce");
     checkMusaError(musaStreamSynchronize(stream), "musaStreamSynchronize");
   }
   checkMPIError(MPI_Barrier(MPI_COMM_WORLD), "MPI_Barrier");
   checkMusaError(musaEventRecord(start), "musaEventRecord");
 
   for (int i = 0; i < ITERATIONS; ++i) {
-    checkMcclError(mcclAllReduce((const void *)d_src, (void *)d_dst,
-                                 SIZE / sizeof(float), mcclFloat, mcclSum, comm,
-                                 stream),
-                   "mcclAllReduce");
+    checkMcclError(mcclAllReduce((const void*)d_src, (void*)d_dst,
+      SIZE / sizeof(float), mcclFloat, mcclSum, comm,
+      stream),
+      "mcclAllReduce");
     checkMusaError(musaStreamSynchronize(stream), "musaStreamSynchronize");
   }
   checkMPIError(MPI_Barrier(MPI_COMM_WORLD), "MPI_Barrier");
   checkMusaError(musaEventRecord(end), "musaEventRecord");
   checkMusaError(musaEventSynchronize(end), "musaEventSynchronize");
   checkMusaError(musaEventElapsedTime(&elapsed_time, start, end),
-                 "musaEventElapsedTime");
+    "musaEventElapsedTime");
   /*
   The following are the three performance metrics commonly used
       1. samples/s (algbw): This metric measures the number of samples
@@ -122,17 +126,17 @@ int main(int argc, char *argv[]) {
   bandwidth = bandwidth + bandwidth;
   if (rank == 0) {
     std::cout << "[FlagPerf Result]interconnect-MPI_interserver-algbw="
-              << std::fixed << std::setprecision(2)
-              << algbw / (1024.0 * 1024.0 * 1024.0) << "GiB/s" << std::endl;
+      << std::fixed << std::setprecision(2)
+      << algbw / (1024.0 * 1024.0 * 1024.0) << "GiB/s" << std::endl;
     std::cout << "[FlagPerf Result]interconnect-MPI_interserver-algbw="
-              << std::fixed << std::setprecision(2)
-              << algbw / (1000.0 * 1000.0 * 1000.0) << "GB/s" << std::endl;
+      << std::fixed << std::setprecision(2)
+      << algbw / (1000.0 * 1000.0 * 1000.0) << "GB/s" << std::endl;
     std::cout << "[FlagPerf Result]interconnect-MPI_interserver-bandwidth="
-              << std::fixed << std::setprecision(2)
-              << bandwidth / (1024.0 * 1024.0 * 1024.0) << "GiB/s" << std::endl;
+      << std::fixed << std::setprecision(2)
+      << bandwidth / (1024.0 * 1024.0 * 1024.0) << "GiB/s" << std::endl;
     std::cout << "[FlagPerf Result]interconnect-MPI_interserver-bandwidth="
-              << std::fixed << std::setprecision(2)
-              << bandwidth / (1000.0 * 1000.0 * 1000.0) << "GB/s" << std::endl;
+      << std::fixed << std::setprecision(2)
+      << bandwidth / (1000.0 * 1000.0 * 1000.0) << "GB/s" << std::endl;
   }
   checkMusaError(musaFree(d_src), "musaFree");
   checkMusaError(musaFree(d_dst), "musaFree");
