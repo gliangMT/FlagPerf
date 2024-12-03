@@ -10,24 +10,24 @@
 #include <iostream>
 
 #define SIZE (1024ULL * 1024ULL * 1024ULL * sizeof(float))
-#define WARMUP_ITERATIONS 1
-#define ITERATIONS 5
+#define WARMUP_ITERATIONS 100
+#define ITERATIONS 1000
 
-void checkMusaError(musaError_t err, const char *msg) {
+void checkMusaError(musaError_t err, const char* msg) {
   if (err != musaSuccess) {
     fprintf(stderr, "MUSA Error: %s: %s\n", msg, musaGetErrorString(err));
     exit(EXIT_FAILURE);
   }
 }
 
-void checkMcclError(mcclResult_t result, const char *msg) {
+void checkMcclError(mcclResult_t result, const char* msg) {
   if (result != mcclSuccess) {
     fprintf(stderr, "MCCL Error: %s: %s\n", msg, mcclGetErrorString(result));
     exit(EXIT_FAILURE);
   }
 }
 
-void checkMPIError(int result, const char *msg) {
+void checkMPIError(int result, const char* msg) {
   if (result != MPI_SUCCESS) {
     char error_string[MPI_MAX_ERROR_STRING];
     int length;
@@ -37,8 +37,8 @@ void checkMPIError(int result, const char *msg) {
   }
 }
 
-int main(int argc, char **argv) {
-  float *d_tensor;
+int main(int argc, char** argv) {
+  float* d_tensor;
   musaEvent_t start, end;
   float elapsed_time;
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   if (rank == 0) {
     checkMcclError(mcclGetUniqueId(&id), "mcclGetUniqueId");
   }
-  MPI_Bcast((void *)&id, sizeof(id), MPI_BYTE, 0, MPI_COMM_WORLD);
+  MPI_Bcast((void*)&id, sizeof(id), MPI_BYTE, 0, MPI_COMM_WORLD);
 
   checkMcclError(mcclCommInitRank(&comm, nranks, id, rank), "mcclCommInitRank");
   checkMusaError(musaStreamCreate(&stream), "musaStreamCreate");
@@ -69,12 +69,13 @@ int main(int argc, char **argv) {
   for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
     if (rank == 0) {
       checkMcclError(
-          mcclSend(d_tensor, SIZE / sizeof(float), mcclFloat, 1, comm, stream),
-          "mcclSend");
-    } else if (rank == 1) {
+        mcclSend(d_tensor, SIZE / sizeof(float), mcclFloat, 1, comm, stream),
+        "mcclSend");
+    }
+    else if (rank == 1) {
       checkMcclError(
-          mcclRecv(d_tensor, SIZE / sizeof(float), mcclFloat, 0, comm, stream),
-          "mcclRecv");
+        mcclRecv(d_tensor, SIZE / sizeof(float), mcclFloat, 0, comm, stream),
+        "mcclRecv");
     }
   }
   checkMcclError(mcclGroupEnd(), "mcclGroupEnd");
@@ -86,12 +87,13 @@ int main(int argc, char **argv) {
   for (int i = 0; i < ITERATIONS; ++i) {
     if (rank == 0) {
       checkMcclError(
-          mcclSend(d_tensor, SIZE / sizeof(float), mcclFloat, 1, comm, stream),
-          "mcclSend");
-    } else if (rank == 1) {
+        mcclSend(d_tensor, SIZE / sizeof(float), mcclFloat, 1, comm, stream),
+        "mcclSend");
+    }
+    else if (rank == 1) {
       checkMcclError(
-          mcclRecv(d_tensor, SIZE / sizeof(float), mcclFloat, 0, comm, stream),
-          "mcclRecv");
+        mcclRecv(d_tensor, SIZE / sizeof(float), mcclFloat, 0, comm, stream),
+        "mcclRecv");
     }
   }
   checkMcclError(mcclGroupEnd(), "mcclGroupEnd");
@@ -100,17 +102,17 @@ int main(int argc, char **argv) {
   checkMusaError(musaEventRecord(end), "musaEventRecord");
   checkMusaError(musaEventSynchronize(end), "musaEventSynchronize");
   checkMusaError(musaEventElapsedTime(&elapsed_time, start, end),
-                 "musaEventElapsedTime");
+    "musaEventElapsedTime");
 
   double bandwidth = SIZE * ITERATIONS / (elapsed_time / 1000.0) +
-                     SIZE * ITERATIONS / (elapsed_time / 1000.0);
+    SIZE * ITERATIONS / (elapsed_time / 1000.0);
   std::cout << "[FlagPerf Result]interconnect-MPI_intraserver-bandwidth="
-            << std::fixed << std::setprecision(2)
-            << bandwidth / (1024.0 * 1024.0 * 1024.0) << "GiB/s" << std::endl;
+    << std::fixed << std::setprecision(2)
+    << bandwidth / (1024.0 * 1024.0 * 1024.0) << "GiB/s" << std::endl;
 
   std::cout << "[FlagPerf Result]interconnect-MPI_intraserver-bandwidth="
-            << std::fixed << std::setprecision(2)
-            << bandwidth / (1000.0 * 1000.0 * 1000.0) << "GB/s" << std::endl;
+    << std::fixed << std::setprecision(2)
+    << bandwidth / (1000.0 * 1000.0 * 1000.0) << "GB/s" << std::endl;
   checkMusaError(musaEventDestroy(start), "musaEventDestroy");
   checkMusaError(musaEventDestroy(end), "musaEventDestroy");
   checkMusaError(musaFree(d_tensor), "musaFree");
