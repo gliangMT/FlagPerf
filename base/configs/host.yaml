@@ -8,7 +8,7 @@ FLAGPERF_LOG_LEVEL: "debug"
 # only in benchmarks, flagperf will automatically execute benchmakrs/<case>/<vendor>/requirements.txt and env.sh
 # all resources to be used in toolkits/<case>/<vendor>/main.sh, should be under toolkits/<case>/<vendor>/
 BENCHMARKS_OR_TOOLKITS: "TOOLKIT"
-HOSTS: ["10.10.129.10","10.10.129.9"]
+HOSTS: ["10.10.129.10","10.10.129.6"]
 NPROC_PER_NODE: 8
 SSH_PORT: "22"
 HOSTS_PORTS: ["2222"]
@@ -26,7 +26,7 @@ CLEAR_CACHES: True
 # for xxx, using
 ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES: 
-     "interconnect-P2P_interserver:S4000": "pytorch_ssh"
+     "interconnect-MPI_interserver:S4000": "pytorch_ssh"
 
 # mthreads "computation-FP32:S4000": "pytorch_2.2"
 # mthreads "computation-FP64:S4000": "pytorch_2.2"
