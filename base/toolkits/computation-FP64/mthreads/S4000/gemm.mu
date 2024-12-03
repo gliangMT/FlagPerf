@@ -1,19 +1,20 @@
 // Copyright (c) 2024 BAAI. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License")
-#include <mublas.h>
-#include <musa_runtime.h>
 
 #include <chrono>
 #include <iostream>
+#include <mublas.h>
+#include <musa_runtime.h>
+#include <vector>
 
 constexpr int M = 8192;
 constexpr int N = 8192;
 constexpr int K = 8192;
 
 struct PrecisionConfig {
-  musaDataType_t musaType;
-  mublasComputeType_t mublasType;
+  // musaDataType_t musaType;
+  // mublasComputeType_t mublasType;
   int bytesPerElement;
   const char* name;
   int NUM_ITERATIONS;
@@ -22,35 +23,31 @@ struct PrecisionConfig {
 
 void test(const PrecisionConfig& config) {
   double* d_A, * d_B, * d_C;
+  std::vector<double> h_A(M * K, double(1.0f));
+  std::vector<double> h_B(K * N, double(1.0f)); 
+  std::vector<double> h_C(M * N);
 
   musaMalloc(&d_A, M * K * config.bytesPerElement);
   musaMalloc(&d_B, K * N * config.bytesPerElement);
-  if (config.musaType == MUSA_R_8I) {
-    musaMalloc(&d_C, M * N * sizeof(float));
-  }
-  else {
-    musaMalloc(&d_C, M * N * config.bytesPerElement);
-  }
+  musaMalloc(&d_C, M * N * config.bytesPerElement);
+  
+  musaMemcpy(d_A, h_A.data(), M * K * config.bytesPerElement, musaMemcpyHostToDevice);
+  musaMemcpy(d_B, h_B.data(), K * N * config.bytesPerElement, musaMemcpyHostToDevice);
 
   mublasHandle_t handle;
   mublasCreate(&handle);
 
-  double alpha = 1.0;
-  double beta = 0.0;
+  double alpha = 1.0f;
+  double beta = 0.0f;
 
   for (int i = 0; i < config.WARMUP_ITERATIONS; ++i) {
-    if (config.musaType == MUSA_R_8I) {
-      mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-        MUSA_R_32I, M, config.mublasType,
-        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
-    }
-    else {
-      mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-        config.musaType, M, config.mublasType,
-        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
-    }
+      mublasDgemm(handle, MUBLAS_OP_N, MUBLAS_OP_N,
+                  M, N, K, &alpha,
+                  d_A, M, 
+                  d_B, K, 
+                  &beta, 
+                  d_C, M);
+    
   }
 
   musaError_t syncError = musaDeviceSynchronize();
@@ -61,18 +58,12 @@ void test(const PrecisionConfig& config) {
   }
 
   for (int i = 0; i < config.NUM_ITERATIONS; ++i) {
-    if (config.musaType == MUSA_R_8I) {
-      mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-        MUSA_R_32I, M, config.mublasType,
-        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
-    }
-    else {
-      mublasGemmEx(handle, MUBLAS_OP_N, MUBLAS_OP_N, M, N, K, &alpha, d_A,
-        config.musaType, M, d_B, config.musaType, K, &beta, d_C,
-        config.musaType, M, config.mublasType,
-        MUBLAS_GEMM_DEFAULT_TENSOR_OP);
-    }
+    mublasDgemm(handle, MUBLAS_OP_N, MUBLAS_OP_N,
+                  M, N, K, &alpha,
+                  d_A, M, 
+                  d_B, K, 
+                  &beta, 
+                  d_C, M);
   }
   syncError = musaDeviceSynchronize();
   auto end = std::chrono::high_resolution_clock::now();
@@ -90,8 +81,10 @@ void test(const PrecisionConfig& config) {
   double FLOPS = flops / time_second;
   double TFLOPS = FLOPS / 1.0e12;
 
-  std::cout << "[FlagPerf Result]" << "computation-FP64=" << TFLOPS << "TFLOPS"
+  std::cout << "[FlagPerf Result]" << "computation-FP32=" << TFLOPS << "TFLOPS"
     << std::endl;
+
+  musaMemcpy(h_C.data(), d_C, M * N * config.bytesPerElement, musaMemcpyDeviceToHost);
 
   musaFree(d_A);
   musaFree(d_B);
@@ -101,7 +94,7 @@ void test(const PrecisionConfig& config) {
 }
 
 int main() {
-  PrecisionConfig fp64 = { MUSA_R_64F, MUBLAS_COMPUTE_64F, 8, "FP64", 10000, 10 };
+  PrecisionConfig fp64 = { sizeof(double), "FP64", 70, 10 };
 
   test(fp64);
 
