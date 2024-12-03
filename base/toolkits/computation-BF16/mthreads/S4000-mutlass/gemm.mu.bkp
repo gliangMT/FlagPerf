@@ -1,0 +1,249 @@
+#include <iostream>
+#include <musa_runtime.h>
+#include <mma.h>
+
+#define WARPSIZE 128
+#define TEST_DETAIL(show_, kernel_, tag_, M_, N_, K_, ARCH_)                  \
+  work_per_warp = M_ * N_ * K_ * 2 * ITERS * UNROLL_NUM;                      \
+  timed = RunKernel(kernel_<M_, N_, K_, ARCH_>, block_num, block_size, iters, \
+                    d_x);                                                     \
+  gops = (static_cast<float>(total_num) / WARPSIZE) * work_per_warp / timed / \
+      1e3f;                                                                   \
+  gops_max = std::max(gops_max, gops);                                        \
+  if (show_) {                                                                \
+    log->print(TAB TAB TAB #tag_ "  : ");                                     \
+    log->print(gops);                                                         \
+    log->print(NEWLINE);                                                      \
+  }
+
+#define TEST_END(show_, type_)             \
+  if (!show_) {                            \
+    log->print(TAB TAB TAB #type_ "  : "); \
+    log->print(gops_max);                  \
+    log->print(NEWLINE);                   \
+  }
+
+
+#define MUSA_CHECK(status)                                              \
+  {                                                                     \
+    musaError_t error = status;                                         \
+    if (error != musaSuccess) {                                         \
+      std::cerr << "Got bad musa status: " << musaGetErrorString(error) \
+                << " at line: " << __LINE__ << std::endl;               \
+      exit(EXIT_FAILURE);                                               \
+    }                                                                   \
+  }
+
+void TrimString(std::string& str) {
+    size_t pos = str.find('\0');
+    if (pos != std::string::npos) {
+        str.erase(pos);
+    }
+}
+
+typedef enum GPU_ARCH {
+    ARCH_SUDI = 10,
+    ARCH_QY1 = 21,
+    ARCH_QY2 = 22,
+    ARCH_PH1 = 31
+} GPU_ARCH_T;
+
+typedef struct {
+    std::string device_name;
+    std::string driver_version;
+    int device_arch;
+
+    uint num_compute_units;
+    uint max_work_group_size;
+    uint64_t max_alloc_size;
+    uint64_t max_global_size;
+    uint max_clock_freq;
+
+    bool half_supported;
+    bool double_supported;
+    bool imma_supported;
+
+    // Test specific options
+    uint bw_global_iters;
+    uint bw_shmem_iters;
+    uint64_t bw_global_max_size;
+    uint64_t bw_shmem_max_size;
+    uint compute_work_groups_per_cu;
+    uint compute_dp_work_groups_per_cu;
+    uint shmem_work_groups_per_cu;
+    uint compute_iters;
+    uint bw_transfer_iters;
+    uint kernel_latency_iters;
+    uint64_t bw_transfer_max_size;
+    std::string extension;
+} device_info_t;
+
+// kernel
+template <int A>
+struct Int2Type {
+    enum { VALUE = A };
+};
+#define UNROLL_NUM 16
+#define ITERS 256
+using namespace mtmusa;
+
+#define MMA_4(a, b, c)        \
+  wmma::mma_sync(c, a, b, c); \
+  wmma::mma_sync(c, a, b, c); \
+  wmma::mma_sync(c, a, b, c); \
+  wmma::mma_sync(c, a, b, c);
+
+#define MMA_16(a, b, c) \
+  MMA_4(a, b, c);       \
+  MMA_4(a, b, c);       \
+  MMA_4(a, b, c);       \
+  MMA_4(a, b, c);
+
+template <int M, int N, int K>
+__device__ void compute_mma_bf16_impl(void* ptr, Int2Type<true>) {
+    wmma::fragment<wmma::matrix_a, M, N, K, __mt_bfloat16, wmma::row_major>
+        a_frag;
+    wmma::fragment<wmma::matrix_b, M, N, K, __mt_bfloat16, wmma::row_major>
+        b_frag;
+    wmma::fragment<wmma::accumulator, M, N, K, float> c_frag;
+    // #pragma unroll
+    for (int i = 0; i < ITERS; i++) {
+        MMA_16(a_frag, b_frag, c_frag);
+    }
+    wmma::store_matrix_sync((float*)ptr, c_frag, M, wmma::mem_col_major);
+}
+
+template <int M, int N, int K>
+__device__ void compute_mma_bf16_impl(void* ptr, Int2Type<false>) {}
+
+template <int M, int N, int K, int ARCH>
+__global__ void compute_mma_bf16(void* ptr) {
+#if defined(__MUSA_ARCH__) && (__MUSA_ARCH__ == 220)
+    compute_mma_bf16_impl<M, N, K>(ptr, Int2Type<(ARCH == ARCH_QY2)>());
+#elif defined(__MUSA_ARCH__) && (__MUSA_ARCH__ == 310)
+    compute_mma_bf16_impl<M, N, K>(ptr, Int2Type<(ARCH == ARCH_PH1)>());
+#endif
+}
+
+
+
+int GetDeviceInfo(int dev, device_info_t* dev_info) {
+    musaDeviceProp deviceProp;
+    if (musaSuccess != musaGetDeviceProperties(&deviceProp, dev)) {
+        return -1;
+    }
+    dev_info->device_name = deviceProp.name;
+    dev_info->device_arch = 10 * deviceProp.major + deviceProp.minor;
+    int driverVersion = 0;
+    musaDriverGetVersion(&driverVersion);
+    dev_info->driver_version = std::to_string(driverVersion);
+    TrimString(dev_info->device_name);
+    TrimString(dev_info->driver_version);
+
+    dev_info->num_compute_units = deviceProp.multiProcessorCount;
+    dev_info->max_work_group_size = deviceProp.maxThreadsPerBlock;
+
+    // Limiting max work-group size to 512
+#define MAX_WG_SIZE 256
+    dev_info->max_work_group_size =
+        std::min(dev_info->max_work_group_size, (uint)MAX_WG_SIZE);
+#undef MAX_WG_SIZE
+
+    /*  Size of global device memory in bytes.  */
+    dev_info->max_global_size = static_cast<uint64_t>(deviceProp.totalGlobalMem);
+    /*  Max size of memory object allocation in bytes.*/
+    dev_info->max_alloc_size = dev_info->max_global_size / 3;
+    dev_info->max_clock_freq = static_cast<uint>(deviceProp.clockRate / 1000);
+    dev_info->double_supported = true;
+    dev_info->half_supported = true;
+
+    dev_info->bw_global_max_size = 1 << 31;
+    dev_info->bw_shmem_max_size = 1 << 28;
+    dev_info->bw_transfer_max_size = 1 << 28;
+    dev_info->compute_work_groups_per_cu = 2048;
+    dev_info->compute_dp_work_groups_per_cu = 512;
+    dev_info->shmem_work_groups_per_cu = 128;
+    dev_info->compute_iters = 20;
+    dev_info->bw_global_iters = 30;
+    dev_info->bw_shmem_iters = 20;
+    dev_info->bw_transfer_iters = 20;
+    dev_info->kernel_latency_iters = 20000;
+
+    return 0;
+}
+
+
+
+int RunComputeMMABF16(device_info_t& dev_info) {
+
+    float timed, gops, gops_max;
+    int work_per_warp;
+    dim3 block_size(1024);
+    int grid_size = std::min((dev_info.num_compute_units) *
+        (dev_info.compute_work_groups_per_cu) *
+        (block_size.x) * sizeof(int),
+        dev_info.max_alloc_size) /
+        ((block_size.x) * sizeof(int));
+    grid_size = std::min(grid_size, 1024);
+    dim3 block_num(grid_size);
+    size_t total_num = block_size.x * block_num.x;
+    uint iters = dev_info.compute_iters;
+    {
+        std::cout << "Compute BF16 MMA Peak (Giga BF16 Operations Per Second)" << std::endl;
+        if (dev_info.device_arch == ARCH_QY2) {
+            void* d_x;
+            MUSA_CHECK(musaMalloc(&d_x, total_num * sizeof(int)));
+            gops_max = 0.0f;
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_16, 16, 16, 16,
+                ARCH_QY2);
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_8_16, 32, 8, 16,
+                ARCH_QY2);
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_8_32_16, 8, 32, 16,
+                ARCH_QY2);
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_32_16, 32, 32, 16,
+                ARCH_QY2);
+            TEST_END(all_cases, BF16);
+            MUSA_CHECK(musaFree(d_x));
+        }
+        else if (dev_info.device_arch == ARCH_PH1) {
+            void* d_x;
+            MUSA_CHECK(musaMalloc(&d_x, total_num * sizeof(int)));
+            gops_max = 0.0f;
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_16, 16, 16, 16,
+                ARCH_PH1);
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_8_16, 32, 8, 16,
+                ARCH_PH1);
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_8_32_16, 8, 32, 16,
+                ARCH_PH1);
+            // TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_32_16, 32, 32, 16,
+            //             ARCH_PH1);
+            TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_32, 16, 16, 32,
+                ARCH_PH1);
+            TEST_END(all_cases, BF16);
+            MUSA_CHECK(musaFree(d_x));
+        }
+        else {
+            std::cout << "NOT SUPPORT mp_" << std::to_string(dev_info.device_arch) << std::endl;
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+int run_test() {
+    device_info_t dev_info;
+    if (GetDeviceInfo(0, &dev_info)) {
+        printf("Can not get informations for Device ");
+    }
+    RunComputeMMABF16(dev_info);
+
+    return 0;
+}
+
+
+int main() {
+    run_test();
+}
