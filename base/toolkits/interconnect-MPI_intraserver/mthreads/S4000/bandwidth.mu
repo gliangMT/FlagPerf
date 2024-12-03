@@ -22,7 +22,7 @@ void checkMusaError(musaError_t err, const char *msg) {
 
 void checkMcclError(mcclResult_t result, const char *msg) {
     if (result != mcclSuccess) {
-        fprintf(stderr, "NCCL Error: %s: %s\n", msg, mcclGetErrorString(result));
+        fprintf(stderr, "MCCL Error: %s: %s\n", msg, mcclGetErrorString(result));
         exit(EXIT_FAILURE);
     }
 }
