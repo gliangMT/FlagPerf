@@ -69,7 +69,7 @@ def main(config, case_config, rank, world_size, local_rank):
     
     for _ in range(case_config.WARMUP):
         if "mthreads" in config.vendor:
-            _tensor = tensor.to(local_rank,non_blocking=True)
+            _tensor = tensor.to(local_rank, non_blocking=True)
         else:
             _tensor = tensor.to(local_rank)
 
@@ -80,7 +80,7 @@ def main(config, case_config, rank, world_size, local_rank):
 
     for _ in range(case_config.ITERS):
         if "mthreads" in config.vendor:
-            _tensor = tensor.to(local_rank,non_blocking=True)
+            _tensor = tensor.to(local_rank, non_blocking=True)
         else:
             _tensor = tensor.to(local_rank)
     
