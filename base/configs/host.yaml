@@ -27,7 +27,7 @@ CLEAR_CACHES: True
 # for xxx, using
 ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES: 
-     "interconnect-MPI_interserver:S4000": "pytorch_ssh"
+     "interconnect-P2P_interserver:S4000": "pytorch_2.2"
 
 # mthreads "computation-FP32:S4000": "pytorch_2.2"
 # mthreads "computation-FP64:S4000": "pytorch_2.2"
@@ -41,8 +41,8 @@ CASES:
 # mthreads "interconnect-h2d:S4000": "pytorch_2.2"
 # mthreads "interconnect-MPI_intraserver:S4000": "pytorch_2.2"
 # mthreads "interconnect-P2P_intraserver:S4000": "pytorch_2.2"
-# mthreads "interconnect-P2P_interserver:S4000": "pytorch_ssh"
-# mthreads "interconnect-MPI_interserver:S4000": "pytorch_ssh" 
+# mthreads "interconnect-P2P_interserver:S4000": "pytorch_2.2"
+# mthreads "interconnect-MPI_interserver:S4000": "pytorch_2.2" 
 
 # iluvatar "computation-BF16:BI150": "pytorch_2.1"
 # iluvatar "computation-FP16:BI150": "pytorch_2.1"
