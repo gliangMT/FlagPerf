@@ -84,22 +84,22 @@ typedef struct {
 } device_info_t;
 
 class Timer {
- public:
+public:
   explicit Timer(float* dur);
   ~Timer();
 
- private:
+private:
   float* duration_us;
   std::chrono::high_resolution_clock::time_point tick;
   std::chrono::high_resolution_clock::time_point tock;
 };
 
 class MUSAEvent {
- public:
+public:
   explicit MUSAEvent(float* dur);
   ~MUSAEvent();
 
- private:
+private:
   float* duration_us;
   musaEvent_t startTime;
   musaEvent_t stopTime;
@@ -109,7 +109,7 @@ int GetDeviceInfo(int dev, device_info_t* dev_info);
 
 // Round down to next multiple of the given base with an optional maximum value
 uint64_t RoundToMultipleOf(uint64_t number, uint64_t base,
-                           uint64_t maxValue = UINT64_MAX);
+  uint64_t maxValue = UINT64_MAX);
 
 void Populate(float* ptr, uint64_t N);
 void Populate(double* ptr, uint64_t N);

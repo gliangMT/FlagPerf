@@ -1,7 +1,3 @@
-// Copyright (c) 2024 BAAI. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License")
-
 #include <chrono>
 #include <iostream>
 #include <mublas.h>
@@ -13,8 +9,6 @@ constexpr int N = 8192;
 constexpr int K = 8192;
 
 struct PrecisionConfig {
-  // musaDataType_t musaType;
-  // mublasComputeType_t mublasType;
   int bytesPerElement;
   const char* name;
   int NUM_ITERATIONS;
@@ -24,13 +18,13 @@ struct PrecisionConfig {
 void test(const PrecisionConfig& config) {
   float* d_A, * d_B, * d_C;
   std::vector<float> h_A(M * K, float(1.0f));
-  std::vector<float> h_B(K * N, float(1.0f)); 
+  std::vector<float> h_B(K * N, float(1.0f));
   std::vector<float> h_C(M * N);
 
   musaMalloc(&d_A, M * K * config.bytesPerElement);
   musaMalloc(&d_B, K * N * config.bytesPerElement);
   musaMalloc(&d_C, M * N * config.bytesPerElement);
-  
+
   musaMemcpy(d_A, h_A.data(), M * K * config.bytesPerElement, musaMemcpyHostToDevice);
   musaMemcpy(d_B, h_B.data(), K * N * config.bytesPerElement, musaMemcpyHostToDevice);
 
@@ -41,13 +35,13 @@ void test(const PrecisionConfig& config) {
   float beta = 0.0f;
 
   for (int i = 0; i < config.WARMUP_ITERATIONS; ++i) {
-      mublasSgemm(handle, MUBLAS_OP_N, MUBLAS_OP_N,
-                  M, N, K, &alpha,
-                  d_A, M, 
-                  d_B, K, 
-                  &beta, 
-                  d_C, M);
-    
+    mublasSgemm(handle, MUBLAS_OP_N, MUBLAS_OP_N,
+      M, N, K, &alpha,
+      d_A, M,
+      d_B, K,
+      &beta,
+      d_C, M);
+
   }
 
   musaError_t syncError = musaDeviceSynchronize();
@@ -59,11 +53,11 @@ void test(const PrecisionConfig& config) {
 
   for (int i = 0; i < config.NUM_ITERATIONS; ++i) {
     mublasSgemm(handle, MUBLAS_OP_N, MUBLAS_OP_N,
-                  M, N, K, &alpha,
-                  d_A, M, 
-                  d_B, K, 
-                  &beta, 
-                  d_C, M);
+      M, N, K, &alpha,
+      d_A, M,
+      d_B, K,
+      &beta,
+      d_C, M);
   }
   syncError = musaDeviceSynchronize();
   auto end = std::chrono::high_resolution_clock::now();

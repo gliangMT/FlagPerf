@@ -40,70 +40,60 @@ int Benchmark::RunComputeMMAINT8(device_info_t& dev_info) {
   size_t total_num = block_size.x * block_num.x;
   uint iters = dev_info.compute_iters;
   {
-    if (dev_info.device_arch == ARCH_QY1) {
+    if (dev_info.device_arch == MP_21) {
       void* d_x;
       CHECK_MUSA_ERROR(musaMalloc(&d_x, total_num * sizeof(int)));
       gops_max = 0.0f;
       TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_8_16, 16, 16, 16,
-        ARCH_QY1);
+        MP_21);
       TEST_END(all_cases, UINT8);
       CHECK_MUSA_ERROR(musaFree(d_x));
     }
-    else if (dev_info.device_arch == ARCH_QY2) {
+    else if (dev_info.device_arch == MP_22) {
       void* d_x;
       CHECK_MUSA_ERROR(musaMalloc(&d_x, total_num * sizeof(int)));
-      // gops_max = 0.0f;
-      // TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_16, 16, 16, 16,
-      //             ARCH_QY2);
-      // TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_32_8_16, 32, 8, 16,
-      //             ARCH_QY2);
-      // TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_8_32_16, 8, 32, 16,
-      //             ARCH_QY2);
-      // TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_32_32_32, 32, 32, 32,
-      //             ARCH_QY2);
-      // TEST_END(all_cases, UINT8);
       gops_max = 0.0f;
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_16, 16, 16, 16,
-        ARCH_QY2);
+        MP_22);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_8_16, 32, 8, 16,
-        ARCH_QY2);
+        MP_22);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_8_32_16, 8, 32, 16,
-        ARCH_QY2);
+        MP_22);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_32_32, 32, 32, 32,
-        ARCH_QY2);
+        MP_22);
       TEST_END(all_cases, INT8);
       CHECK_MUSA_ERROR(musaFree(d_x));
     }
-    else if (dev_info.device_arch == ARCH_PH1) {
+    else if (dev_info.device_arch == MP_31) {
       void* d_x;
       CHECK_MUSA_ERROR(musaMalloc(&d_x, total_num * sizeof(int)));
       gops_max = 0.0f;
       TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_16, 16, 16, 16,
-        ARCH_PH1);
+        MP_31);
       TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_32_8_16, 32, 8, 16,
-        ARCH_PH1);
+        MP_31);
       TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_8_32_16, 8, 32, 16,
-        ARCH_PH1);
+        MP_31);
       // TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_32_32_32, 32, 32, 32,
-      //             ARCH_PH1);
+      //             MP_31);
       TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_32, 16, 16, 32,
-        ARCH_PH1);
+        MP_31);
       TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_64, 16, 16, 64,
-        ARCH_PH1);
+        MP_31);
       TEST_END(all_cases, UINT8);
       gops_max = 0.0f;
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_16, 16, 16, 16,
-        ARCH_PH1);
+        MP_31);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_8_16, 32, 8, 16,
-        ARCH_PH1);
+        MP_31);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_8_32_16, 8, 32, 16,
-        ARCH_PH1);
+        MP_31);
       // TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_32_32, 32, 32, 32,
-      //             ARCH_PH1);
+      //             MP_31);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_32, 16, 16, 32,
-        ARCH_PH1);
+        MP_31);
       TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_64, 16, 16, 64,
-        ARCH_PH1);
+        MP_31);
       TEST_END(all_cases, INT8);
       CHECK_MUSA_ERROR(musaFree(d_x));
     }

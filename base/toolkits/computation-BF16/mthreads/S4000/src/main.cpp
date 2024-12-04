@@ -1,4 +1,4 @@
-#include "benchmark.h"
+#include "benchmark_bf16.h"
 
 int main() {
     Benchmark bm;

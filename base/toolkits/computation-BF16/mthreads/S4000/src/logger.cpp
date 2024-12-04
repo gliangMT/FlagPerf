@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <iostream>
 
-logger::logger(std::string FileName) {
+logger::logger() :FileName("benchmark.log") {
   outFile.open(FileName);
   if (!outFile.is_open()) {
     throw std::runtime_error("Failed to open log file.");
@@ -11,7 +11,14 @@ logger::logger(std::string FileName) {
 }
 
 logger::~logger() {
-  outFile.close();
+  if (outFile.is_open()) {
+    outFile.close();
+  }
+
+  // Delete the log file
+  if (std::remove(FileName.c_str()) != 0) {
+    std::cerr << "Failed to delete log file: " << FileName << "\n";
+  }
 }
 
 

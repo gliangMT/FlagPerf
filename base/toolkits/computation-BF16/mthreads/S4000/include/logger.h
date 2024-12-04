@@ -3,11 +3,11 @@
 #include <fstream>
 class logger {
   std::ofstream outFile;
-
- public:
-  logger(std::string FileName);
+  std::string FileName;
+public:
+  logger();
   ~logger();
-  // Overloaded function to print on stdout/android activity
+
   void print(std::string str);
   void print(double val);
   void print(float val);

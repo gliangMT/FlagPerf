@@ -1,5 +1,5 @@
 #pragma once
-#include "benchmark.h"
+#include "benchmark_bf16.h"
 
 template <class T, typename... Args>
 float Benchmark::RunKernel(T func, dim3 block_num, dim3 block_size, uint iters,
