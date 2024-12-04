@@ -1,7 +1,3 @@
-// Copyright (c) 2024 BAAI. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License")
-
 #include <stdio.h>
 #include <musa_runtime.h>
 
@@ -10,7 +6,7 @@
 #define WARMUP_ITERATIONS 100
 #define ITERATIONS 10000
 
-void checkMusaError(musaError_t err, const char *msg) {
+void checkMusaError(musaError_t err, const char* msg) {
     if (err != musaSuccess) {
         fprintf(stderr, "MUSA Error: %s: %s\n", msg, musaGetErrorString(err));
         exit(EXIT_FAILURE);
@@ -18,7 +14,7 @@ void checkMusaError(musaError_t err, const char *msg) {
 }
 
 int main() {
-    float *d_src, *d_dst;
+    float* d_src, * d_dst;
     musaEvent_t start, end;
     float elapsed_time;
 
