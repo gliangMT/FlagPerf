@@ -42,10 +42,10 @@ void TrimString(std::string& str) {
 }
 
 typedef enum GPU_ARCH {
-    ARCH_SUDI = 10,
-    ARCH_QY1 = 21,
-    ARCH_QY2 = 22,
-    ARCH_PH1 = 31
+    MP_10 = 10,
+    MP_21 = 21,
+    MP_22 = 22,
+    MP_31 = 31
 } GPU_ARCH_T;
 
 typedef struct {
@@ -119,9 +119,9 @@ __device__ void compute_mma_bf16_impl(void* ptr, Int2Type<false>) {}
 template <int M, int N, int K, int ARCH>
 __global__ void compute_mma_bf16(void* ptr) {
 #if defined(__MUSA_ARCH__) && (__MUSA_ARCH__ == 220)
-    compute_mma_bf16_impl<M, N, K>(ptr, Int2Type<(ARCH == ARCH_QY2)>());
+    compute_mma_bf16_impl<M, N, K>(ptr, Int2Type<(ARCH == MP_22)>());
 #elif defined(__MUSA_ARCH__) && (__MUSA_ARCH__ == 310)
-    compute_mma_bf16_impl<M, N, K>(ptr, Int2Type<(ARCH == ARCH_PH1)>());
+    compute_mma_bf16_impl<M, N, K>(ptr, Int2Type<(ARCH == MP_31)>());
 #endif
 }
 
@@ -190,35 +190,35 @@ int RunComputeMMABF16(device_info_t& dev_info) {
     uint iters = dev_info.compute_iters;
     {
         std::cout << "Compute BF16 MMA Peak (Giga BF16 Operations Per Second)" << std::endl;
-        if (dev_info.device_arch == ARCH_QY2) {
+        if (dev_info.device_arch == MP_22) {
             void* d_x;
             MUSA_CHECK(musaMalloc(&d_x, total_num * sizeof(int)));
             gops_max = 0.0f;
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_16, 16, 16, 16,
-                ARCH_QY2);
+                MP_22);
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_8_16, 32, 8, 16,
-                ARCH_QY2);
+                MP_22);
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_8_32_16, 8, 32, 16,
-                ARCH_QY2);
+                MP_22);
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_32_16, 32, 32, 16,
-                ARCH_QY2);
+                MP_22);
             TEST_END(all_cases, BF16);
             MUSA_CHECK(musaFree(d_x));
         }
-        else if (dev_info.device_arch == ARCH_PH1) {
+        else if (dev_info.device_arch == MP_31) {
             void* d_x;
             MUSA_CHECK(musaMalloc(&d_x, total_num * sizeof(int)));
             gops_max = 0.0f;
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_16, 16, 16, 16,
-                ARCH_PH1);
+                MP_31);
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_8_16, 32, 8, 16,
-                ARCH_PH1);
+                MP_31);
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_8_32_16, 8, 32, 16,
-                ARCH_PH1);
+                MP_31);
             // TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_32_16, 32, 32, 16,
-            //             ARCH_PH1);
+            //             MP_31);
             TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_32, 16, 16, 32,
-                ARCH_PH1);
+                MP_31);
             TEST_END(all_cases, BF16);
             MUSA_CHECK(musaFree(d_x));
         }

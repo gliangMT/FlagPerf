@@ -1,5 +1,5 @@
 #include "benchmark.muh"
-#include "compute_mma_bf16.muh"
+#include "compute_mma_int8.muh"
 
 #define WARPSIZE 128
 #define TEST_DETAIL(show_, kernel_, tag_, M_, N_, K_, ARCH_)                  \
@@ -23,7 +23,9 @@
     log->print(NEWLINE); \
   }
 
-int Benchmark::RunComputeMMABF16(device_info_t& dev_info) {
+int Benchmark::RunComputeMMAINT8(device_info_t& dev_info) {
+
+  // mtgpu imma only
 
   float timed, gops, gops_max;
   int work_per_warp;
@@ -33,41 +35,66 @@ int Benchmark::RunComputeMMABF16(device_info_t& dev_info) {
     (block_size.x) * sizeof(int),
     dev_info.max_alloc_size) /
     ((block_size.x) * sizeof(int));
-  grid_size = std::min(grid_size, 1024);
+  grid_size = std::min(grid_size, 2048);
   dim3 block_num(grid_size);
   size_t total_num = block_size.x * block_num.x;
   uint iters = dev_info.compute_iters;
   {
-    if (dev_info.device_arch == MP_22) {
+    if (dev_info.device_arch == MP_21) {
       void* d_x;
       CHECK_MUSA_ERROR(musaMalloc(&d_x, total_num * sizeof(int)));
       gops_max = 0.0f;
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_16, 16, 16, 16,
+      TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_8_16, 16, 16, 16,
+        MP_21);
+      TEST_END(all_cases, UINT8);
+      CHECK_MUSA_ERROR(musaFree(d_x));
+    }
+    else if (dev_info.device_arch == MP_22) {
+      void* d_x;
+      CHECK_MUSA_ERROR(musaMalloc(&d_x, total_num * sizeof(int)));
+      gops_max = 0.0f;
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_16, 16, 16, 16,
         MP_22);
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_8_16, 32, 8, 16,
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_8_16, 32, 8, 16,
         MP_22);
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_8_32_16, 8, 32, 16,
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_8_32_16, 8, 32, 16,
         MP_22);
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_32_16, 32, 32, 16,
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_32_32, 32, 32, 32,
         MP_22);
-      TEST_END(all_cases, BF16);
+      TEST_END(all_cases, INT8);
       CHECK_MUSA_ERROR(musaFree(d_x));
     }
     else if (dev_info.device_arch == MP_31) {
       void* d_x;
       CHECK_MUSA_ERROR(musaMalloc(&d_x, total_num * sizeof(int)));
       gops_max = 0.0f;
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_16, 16, 16, 16,
+      TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_16, 16, 16, 16,
         MP_31);
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_8_16, 32, 8, 16,
+      TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_32_8_16, 32, 8, 16,
         MP_31);
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_8_32_16, 8, 32, 16,
+      TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_8_32_16, 8, 32, 16,
         MP_31);
-      // TEST_DETAIL(all_cases, compute_mma_bf16, BF16_32_32_16, 32, 32, 16,
+      // TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_32_32_32, 32, 32, 32,
       //             MP_31);
-      TEST_DETAIL(all_cases, compute_mma_bf16, BF16_16_16_32, 16, 16, 32,
+      TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_32, 16, 16, 32,
         MP_31);
-      TEST_END(all_cases, BF16);
+      TEST_DETAIL(all_cases, compute_mma_uint8, UINT8_16_16_64, 16, 16, 64,
+        MP_31);
+      TEST_END(all_cases, UINT8);
+      gops_max = 0.0f;
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_16, 16, 16, 16,
+        MP_31);
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_8_16, 32, 8, 16,
+        MP_31);
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_8_32_16, 8, 32, 16,
+        MP_31);
+      // TEST_DETAIL(all_cases, compute_mma_int8, INT8_32_32_32, 32, 32, 32,
+      //             MP_31);
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_32, 16, 16, 32,
+        MP_31);
+      TEST_DETAIL(all_cases, compute_mma_int8, INT8_16_16_64, 16, 16, 64,
+        MP_31);
+      TEST_END(all_cases, INT8);
       CHECK_MUSA_ERROR(musaFree(d_x));
     }
     else {

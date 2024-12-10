@@ -38,16 +38,20 @@ public:
     int bandwidth_mem_size;
     int bandwidth_iters;
 
+
     logger* log;
 
     Benchmark();
     ~Benchmark();
 
+
+    // return avg time in us
     template <class T, typename... Args>
     float RunKernel(T func, dim3 block_num, dim3 block_size, uint iters,
         Args... args);
 
-    int RunComputeMMABF16(device_info_t& dev_info);
 
-    int RunBF16Test();
+    int RunComputeMMAINT8(device_info_t& dev_info);
+
+    int RunINT8Test();
 };
