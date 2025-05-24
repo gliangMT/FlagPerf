@@ -1,36 +1,46 @@
-FLAGPERF_PATH: "/home/FlagPerf/base"
+FLAGPERF_PATH: "/home/mccxadmin/pkg/FlagPerf/base"
 FLAGPERF_LOG_PATH: "result"
-VENDOR: "nvidia"
-FLAGPERF_LOG_LEVEL: "info"
+VENDOR: "mthreads"
+FLAGPERF_LOG_LEVEL: "debug"
 # "BENCHMARK" means benchmarks(torch), "TOOLKIT" means toolkits
 # benchmarks using container_main to launch "torchrun benchmarks/<case>/main.py", nnodes * nproc
 # toolkits using container_main to launch bash toolkits/<case>/<vendor>/main.sh, nnodes.
 # only in benchmarks, flagperf will automatically execute benchmakrs/<case>/<vendor>/requirements.txt and env.sh
 # all resources to be used in toolkits/<case>/<vendor>/main.sh, should be under toolkits/<case>/<vendor>/
-BENCHMARKS_OR_TOOLKITS: "BENCHMARK"
-HOSTS: ["192.168.1.2", "192.168.1.3"]
+BENCHMARKS_OR_TOOLKITS: "TOOLKIT"
+HOSTS: ["10.116.36.13"]
 NPROC_PER_NODE: 8
 SSH_PORT: "22"
 HOSTS_PORTS: ["2222"]
 MASTER_PORT: "29501"
 SHM_SIZE: "32G"
-ACCE_CONTAINER_OPT: " --gpus all"
+ACCE_CONTAINER_OPT: "--env MTHREADS_VISIBLE_DEVICES=all"
 # for nvidia, using " -- gpus all"
 # for mthreads, using"--env MTHREADS_VISIBLE_DEVICES=all"
 # for kunlunxin, using "--device=/dev/xpu0 --device=/dev/xpu1 --device=/dev/xpu2 --device=/dev/xpu3 --device=/dev/xpu4 --device=/dev/xpu5 --device=/dev/xpu6 --device=/dev/xpu7 --device=/dev/xpuctrl"
 # for iluvatar, using""
-# for metax, using "--device=/dev/dri --device=/dev/mxcd --group-add video"
-# for dcu, using "--device=/dev/kfd --device=/dev/dri --group-add video -v /opt/hyhal:/opt/hyhal"
 # for xxx, using
 PIP_SOURCE: "https://mirror.baidu.com/pypi/simple"
 CLEAR_CACHES: True
 # for nvidia, using "CUDA_VISIBLE_DEVICES"
 # for mthreads, using "MUSA_VISIBLE_DEVICES"
-# for dcu, using "HIP_VISIBLE_DEVICES"
 # for xxx, using
-ACCE_VISIBLE_DEVICE_ENV_NAME: "CUDA_VISIBLE_DEVICES"
-CASES: 
-     "computation-FP32": "pytorch_2.3"
+ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
+CASES:
+#     "interconnect-P2P_interserver:S5000": "pytorch_ssh"
+#     "interconnect-MPI_interserver:S5000": "pytorch_ssh"
+      "computation-FP64:S5000": "pytorch_debian"
+      "computation-FP32:S5000": "pytorch_debian"
+      "computation-TF32:S5000": "pytorch_debian"
+      "computation-FP16:S5000": "pytorch_debian"
+      "computation-BF16:S5000": "pytorch_debian"
+      "computation-FP8:S5000": "pytorch_debian"
+      "computation-INT8:S5000": "pytorch_debian"
+      "main_memory-bandwidth:S5000": "pytorch_debian"
+      "main_memory-capacity:S5000": "pytorch_debian"
+      "interconnect-h2d:S5000": "pytorch_debian"
+      "interconnect-MPI_intraserver:S5000": "pytorch_debian"
+      "interconnect-P2P_intraserver:S5000": "pytorch_debian"
 
 # mthreads "computation-FP64:S5000": "pytorch_2.2"
 # mthreads "computation-FP32:S5000": "pytorch_2.2"
