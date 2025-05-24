@@ -111,13 +111,13 @@ void GenerateRandom(Type* data, int64_t size, uint seed = 2333) {
     // constexpr auto seed = 2333;
     std::default_random_engine engine(seed);
     if (std::is_floating_point_v<RandomType>) {
-        std::uniform_real_distribution<float> dist(0, 0);
+        std::uniform_real_distribution<float> dist(-1, 1);
         for (auto i = 0; i < size; i++) {
             data[i] = (Type)(dist(engine));
         }
     }
     else {
-        std::uniform_int_distribution<int8_t> dist(0, 0);
+        std::uniform_int_distribution<int8_t> dist(-127, 127);
         for (auto i = 0; i < size; i++) {
             data[i] = (Type)(dist(engine));
         }
