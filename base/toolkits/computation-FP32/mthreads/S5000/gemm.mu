@@ -95,7 +95,7 @@ void test(const PrecisionConfig &config)
 int main()
 {
   musaSetDevice(5);
-  PrecisionConfig fp32 = {sizeof(float), "FP32", 2500, 10};
+  PrecisionConfig fp32 = {sizeof(float), "FP32", 50, 10};
 
   test(fp32);
 
