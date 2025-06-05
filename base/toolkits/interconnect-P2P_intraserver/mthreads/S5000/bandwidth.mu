@@ -4,8 +4,8 @@
 #include <iomanip>
 
 #define SIZE (1024ULL * 1024ULL * 1024ULL * sizeof(float))
-#define WARMUP_ITERATIONS 100
-#define ITERATIONS 3200
+#define WARMUP_ITERATIONS 1
+#define ITERATIONS 50
 
 void checkMusaError(musaError_t err, const char* msg) {
     if (err != musaSuccess) {

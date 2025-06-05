@@ -1,4 +1,4 @@
-FLAGPERF_PATH: "/home/mccxadmin/pkg/FlagPerf/base"
+FLAGPERF_PATH: "/data/shared_dir/FlagPerf/base"
 FLAGPERF_LOG_PATH: "result"
 VENDOR: "mthreads"
 FLAGPERF_LOG_LEVEL: "debug"
@@ -8,7 +8,7 @@ FLAGPERF_LOG_LEVEL: "debug"
 # only in benchmarks, flagperf will automatically execute benchmakrs/<case>/<vendor>/requirements.txt and env.sh
 # all resources to be used in toolkits/<case>/<vendor>/main.sh, should be under toolkits/<case>/<vendor>/
 BENCHMARKS_OR_TOOLKITS: "TOOLKIT"
-HOSTS: ["10.116.36.13"]
+HOSTS: ["10.116.36.198"]
 NPROC_PER_NODE: 8
 SSH_PORT: "22"
 HOSTS_PORTS: ["2222"]
@@ -29,18 +29,19 @@ ACCE_VISIBLE_DEVICE_ENV_NAME: "MUSA_VISIBLE_DEVICES"
 CASES:
 #     "interconnect-P2P_interserver:S5000": "pytorch_ssh"
 #     "interconnect-MPI_interserver:S5000": "pytorch_ssh"
-      "computation-FP64:S5000": "pytorch_debian"
-      "computation-FP32:S5000": "pytorch_debian"
-      "computation-TF32:S5000": "pytorch_debian"
-      "computation-FP16:S5000": "pytorch_debian"
-      "computation-BF16:S5000": "pytorch_debian"
-      "computation-FP8:S5000": "pytorch_debian"
-      "computation-INT8:S5000": "pytorch_debian"
-      "main_memory-bandwidth:S5000": "pytorch_debian"
-      "main_memory-capacity:S5000": "pytorch_debian"
+      # "computation-FP64:S5000": "pytorch_debian"
+      # "computation-FP32:S5000": "pytorch_debian"
+      # "computation-TF32:S5000": "pytorch_debian"
+      # "computation-FP16:S5000": "pytorch_debian"
+      # "computation-BF16:S5000": "pytorch_debian"
+      # "computation-FP8:S5000": "pytorch_debian"
+      # "computation-INT8:S5000": "pytorch_debian"
+      # "main_memory-bandwidth:S5000": "pytorch_debian"
+      # "main_memory-capacity:S5000": "pytorch_debian"
       "interconnect-h2d:S5000": "pytorch_debian"
-      "interconnect-MPI_intraserver:S5000": "pytorch_debian"
-      "interconnect-P2P_intraserver:S5000": "pytorch_debian"
+      "interconnect-d2h:S5000": "pytorch_debian"
+      # "interconnect-MPI_intraserver:S5000": "pytorch_debian"
+      # "interconnect-P2P_intraserver:S5000": "pytorch_debian"
 
 # mthreads "computation-FP64:S5000": "pytorch_2.2"
 # mthreads "computation-FP32:S5000": "pytorch_2.2"
