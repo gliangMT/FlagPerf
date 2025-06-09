@@ -626,7 +626,7 @@ private:
 int RunMatMul() {
 
 
-    int device_id = 5;
+    int device_id = 0;
     CHECK_MUSA(musaGetDevice(&device_id));
 
     MatMulParam param;
